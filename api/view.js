@@ -1,9 +1,11 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 export default function handler(req, res) {
   const { file } = req.query;
-  const filePath = path.join(process.cwd(), 'public', `${file}.lua`);
+  const fileName = `${file}.lua`;
+
+  const filePath = path.join(process.cwd(), 'public', 'raw', fileName); // 👈 add 'raw' here
 
   fs.readFile(filePath, 'utf8', (err, content) => {
     if (err) {
@@ -11,40 +13,40 @@ export default function handler(req, res) {
       return;
     }
 
-    const rawURL = `https://${req.headers.host}/raw/${file}.lua`;
-    const luaWrapper = `--<<Subscribe To M4rkk3:)>>\n\nloadstring(game:HttpGet("${rawURL}"))()`;
+    const rawURL = `${req.headers.host.startsWith('http') ? '' : 'https://'}${req.headers.host}/raw/${fileName}`;
+    const luaWrapper = `--<<Subscribe To M4rkk3:)>>
+
+loadstring(game:HttpGet("${rawURL}"))()`;
 
     res.setHeader('Content-Type', 'text/html');
-
-    res.end(`
+    res.send(`
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>${file}.lua</title>
+        <title>${fileName}</title>
         <style>
-          body {
+          html, body {
             margin: 0;
-            font-family: monospace;
+            padding: 0;
+            height: 100%;
             background: rgb(20, 20, 20);
+            font-family: monospace;
             color: white;
             display: flex;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
+            justify-content: center;
           }
           .container {
             max-width: 480px;
             width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
           }
           .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 8px;
           }
           .author {
             font-size: 15px;
@@ -66,21 +68,6 @@ export default function handler(req, res) {
             50% { left: 100%; }
             100% { left: 100%; }
           }
-          .copy-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            opacity: 1;
-            transition: transform 0.2s;
-          }
-          .copy-btn.clicked {
-            transform: scale(1.2);
-          }
-          .copy-btn img {
-            width: 18px;
-            height: 18px;
-            filter: brightness(1000%) invert(1);
-          }
           .card {
             background: rgb(48, 48, 48);
             border: 1px solid rgb(80, 80, 80);
@@ -92,9 +79,8 @@ export default function handler(req, res) {
           pre {
             margin: 0;
             font-size: 13px;
-            line-height: 1.4;
             white-space: pre-wrap;
-            word-wrap: break-word;
+            word-break: break-word;
           }
         </style>
       </head>
@@ -102,22 +88,11 @@ export default function handler(req, res) {
         <div class="container">
           <div class="header">
             <div class="author">Author: Markk</div>
-            <button class="copy-btn" onclick="copyToClipboard(this)">
-              <img src="https://cdn-icons-png.flaticon.com/512/60/60990.png" />
-            </button>
           </div>
           <div class="card">
-            <pre id="code">${luaWrapper}</pre>
+            <pre>${luaWrapper}</pre>
           </div>
         </div>
-        <script>
-          function copyToClipboard(btn) {
-            const text = document.getElementById("code").innerText;
-            btn.classList.add("clicked");
-            setTimeout(() => btn.classList.remove("clicked"), 200);
-            navigator.clipboard.writeText(text).catch(() => {});
-          }
-        </script>
       </body>
       </html>
     `);
