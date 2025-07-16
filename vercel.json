@@ -1,6 +1,12 @@
 {
   "rewrites": [
-    { "source": "/raw/:file.lua", "destination": "/api/raw?file=:file" },
-    { "source": "/:file.lua", "destination": "/api/view?file=:file" }
+    {
+      "source": "/raw/:file.lua",
+      "destination": "/raw/:file.lua"
+    },
+    {
+      "source": "/:file.lua",
+      "destination": "/api/view?file=:file"
+    }
   ]
 }
