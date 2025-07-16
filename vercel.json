@@ -1,5 +1,8 @@
 {
   "rewrites": [
-    { "source": "/:file(lua)", "destination": "/api/raw" }
+    {
+      "source": "/:file(.+)\\.lua",
+      "destination": "/api/raw?file=:file"
+    }
   ]
 }
