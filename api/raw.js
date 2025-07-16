@@ -1,15 +1,16 @@
-import { readFile } from 'fs/promises';
-import { join } from 'path';
+export default function handler(req, res) {
+  const fs = require('fs');
+  const path = require('path');
 
-export default async function handler(req, res) {
-  const file = req.url.split("/").pop(); // get "TCO.lua"
-  const filePath = join(process.cwd(), 'public', file);
+  const file = req.query.file;
+  const filePath = path.join(process.cwd(), 'public', `${file}.lua`);
 
-  try {
-    const content = await readFile(filePath, 'utf8');
-    res.setHeader('Content-Type', 'text/plain');
-    res.send(content);
-  } catch {
-    res.status(404).send('File not found');
+  if (!fs.existsSync(filePath)) {
+    res.status(404).send('File Not Found');
+    return;
   }
+
+  const content = fs.readFileSync(filePath, 'utf-8');
+  res.setHeader('Content-Type', 'text/plain');
+  res.send(content);
 }
